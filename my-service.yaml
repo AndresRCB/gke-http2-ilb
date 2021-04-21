@@ -3,6 +3,7 @@ kind: Service
 metadata:
   annotations:
     cloud.google.com/app-protocols: '{"my-port":"HTTP2"}'
+    cloud.google.com/neg: '{"ingress": true}'
   name: echoheaders
   labels:
     app: echoheaders

@@ -8,20 +8,29 @@ This demo will create a project for you, so you can start from an empty cloud sh
 
 ## Steps
 1. Update the `main.tf` file with your values (folder is optional):
+```sh
     - project_id= "unique-project-id"
     - billing_account = "FFFFF-FFFFF-FFFFF"
     - org_id = "333333333333"
     - [OPTIONAL] folder_id = "111111111111" 
-1. Execute:
-    1. `terraform init`
-    1. `terraform apply -auto-approve`
-    1. `gcloud container clusters get-credentials --PARAMS` command obtained from `terraform output`
-    1. `kubectl apply -f .`
-    1. `echo $(kubectl get ingress echomap -o template --template={{range.status.loadBalancer.ingress}}{{.ip}}{{end}})` and keep that IP address at hand
-1. SSH into the test VM (`vm_instance`) using `gcloud` and the command from `terraform output`
-1. Using the IP address obtained above from the ingress, execute `curl IP_ADDRESS` (you should see "request_version=2" in the response which indicates HTTP2)
+```
+2. Execute:
+```sh
+terraform init && terraform apply -auto-approve
+$(terraform output -raw get_cluster_credentials_command)
+kubectl apply -f .
+```
+3. Get the ILB's internal IP address and keep it at hand. The command might return nothing until the IP address is allocated, which could take a minute or two
+```sh
+echo $(kubectl get ingress echomap -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+```
+4. SSH into the test VM (`vm_instance`)
+```sh
+$(terraform output -raw instance_connect_command)
+```
+5. Using the IP address obtained above from the ingress, execute `curl IP_ADDRESS` (you should see "request_version=2" in the response which indicates HTTP2)
 
-## Clean-up
+## Cleaning up
 You have two options:
 - Execute `kubectl delete -f .` and `terraform destroy -auto-approve` (takes 15 to 30 minutes to run)
-- Shut down the Google Cloud Project (requires no time)
+- Shut down the Google Cloud Project (takes no time)
